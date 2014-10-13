@@ -15,7 +15,7 @@ from copy import deepcopy
 from config import *
 import hashlib
 
-CURRENT_RELEASE = "0.1.0"
+CURRENT_RELEASE = "v0.1.0"
 
 def SetupLogging():
 	logger = logging.getLogger("FlowGraph")
