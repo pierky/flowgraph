@@ -508,6 +508,12 @@
 			return;
 		}
 
+		if( Graph['Stop'] - Graph['Start'] > 12*60*60 ) {
+			if( !UIConfirm('An interval bigger than 12 hours has been selected.\nThis may require a long processing time if netflow data has not previously cached.\n\nProceed anyway?') ) {
+				return;
+			}
+		}
+
 		UIElements = [ '#new', '#edit', '#delete', '#draw', '[name=start]', '[name=stop]' ];
 		UIEnableDisableElements( UIElements, false );
 
