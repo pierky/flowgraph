@@ -69,12 +69,7 @@ The FlowGraph web front-end has been written within the [Flask](http://flask.poc
 
 Simply fetch the GitHub repository into your local directory:
 
-- One step installation:
-
- ```
- git clone https://github.com/pierky/flowgraph.git /usr/local/src/flowgraph
- git clone https://github.com/xdan/datetimepicker /usr/local/src/flowgraph/static/js/datetimepicker
- ``` 
+- One step installation: `git clone https://github.com/pierky/flowgraph.git /usr/local/src/flowgraph` 
 
  (replace /usr/local/src/flowgraph with your preferred destination directory)
 
