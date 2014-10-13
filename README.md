@@ -72,7 +72,7 @@ Simply fetch the GitHub repository into your local directory:
 - One step installation:
 
  ```
- git clone https://github.com/pierky/flowgraph.git /usr/local/src/flowgraph`
+ git clone https://github.com/pierky/flowgraph.git /usr/local/src/flowgraph
  git clone https://github.com/xdan/datetimepicker /usr/local/src/flowgraph/static/js/datetimepicker
  ``` 
 
