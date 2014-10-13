@@ -27,6 +27,8 @@ FlowGraph
 
 FlowGraph allows to dynamically build graphs based on previously collected netflow data and to use them in a web-based front-end, adding details about Autonomous System Number holders, IPv4 and IPv6 prefixes, inet(6)num objects, netnames from [RIPE Stat](https://stat.ripe.net/).
 
+![Example](https://raw.github.com/pierky/flowgraph/master/example.png)
+
 Its core is written in Python and runs server-side, while the GUI is a web page powered by JavaScript and AJAX.
 
 ### Demo
@@ -142,6 +144,8 @@ The output will show how to reach the application:
 Any output debug message will be written to stdout.
 
 #### Apache
+
+- Install **mod_wsgi** (if not yet): `apt-get install libapache2-mod-wsgi` (Debian-like)
 
 - Configure Apache to use **mod_wsgi**.
 
