@@ -1,0 +1,56 @@
+Graph:
+	ID: string
+	Title: string
+	Draw:
+		How: "bar" | "area" | "lines"
+		What: "bytes" | "packets" | "flows" | "bps" | "pps" | "bpp"
+	Start: integer (epoch)
+	Stop: integer (epoch)
+	Query: <Query>
+	Scheduler:
+		Schedules: array of <Schedule>
+		MaxCache: integer (default: MAX_CACHE_NFDATA)
+
+Schedule:
+	StartDate: string, YYYY-MM-DD
+	StopDate: string, YYYY-MM-DD
+	StartTime: string, HH:mm
+	StopTime: string, HH:mm
+	DoW: array of integer (ISO weekday, 1 = Monday, 7 = Sunday)
+
+Query:
+	AggrField: string
+	AggrType: "A" | "s"
+	CacheFile: string
+	Filter: string ("%filters%" will be replaced with VAR_DIR)
+	OrderBy:
+		ColName: "bytes" | "packets" | "flows" | "bps" | "pps" | "bpp"
+		Order: "ASC" | "DESC"
+	TopN: integer
+	SourceFiles:
+		BaseDir: string (default: NETFLOW_DATA_DIR)
+		FileNameFormat: string (default: NETFLOW_FILENAME_FORMAT)
+		Interval: integer (default: NETFLOW_INTERVAL)
+		SourceIDs: array of string
+
+ChartData:
+	DistinctKeys: array of string
+	Epoches: array of <Epoch>
+
+Epoch:
+	Epoch: integer (epoch)
+	Recordset: array of <Record>
+
+Record:
+	key: string | "summary"
+	bytes: integer
+	packets: integer
+	flows: integer
+	bps: integer
+	pps: integer
+	bpp: integer
+
+CacheData:
+	Query: <Query>
+	<epoch 1 as string>: array of <Record>
+	<epoch n as string>: array of <Record>
