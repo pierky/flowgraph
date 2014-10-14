@@ -15,7 +15,7 @@ from copy import deepcopy
 from config import *
 import hashlib
 
-CURRENT_RELEASE = "v0.1.0"
+CURRENT_RELEASE = "v0.2.0"
 
 def SetupLogging():
 	logger = logging.getLogger("FlowGraph")
@@ -395,7 +395,7 @@ def FilesExist( Start, Stop, Query, CacheData={} ):
 
 # MaxCache in days
 # returns: Error, <ChartData>
-def ProcessFiles( Start, Stop, Query, MaxCache=None ):
+def ProcessFiles( Start, Stop, Query, MaxCache=None, RequestID=None, ProgressCallBack=None, GetRequestStatus=None ):
 	Error = None
 	Results = {
 		"DistinctKeys": [],
@@ -440,6 +440,14 @@ def ProcessFiles( Start, Stop, Query, MaxCache=None ):
 	CurrEpoch = int( StartEpoch / ( Query["SourceFiles"]["Interval"] or NETFLOW_INTERVAL ) ) * ( Query["SourceFiles"]["Interval"] or NETFLOW_INTERVAL )
 
 	while CurrEpoch <= StopEpoch:
+		if GetRequestStatus:
+			if GetRequestStatus( RequestID )["Cancelled"]:
+				Debug( "Request cancelled" )
+				break
+
+		if RequestID and ProgressCallBack:
+			ProgressCallBack( RequestID, CurrEpoch, 15 )
+
 		CurrDate = datetime.datetime.fromtimestamp(CurrEpoch)
 		FileName = CurrDate.strftime( Query["SourceFiles"]["FileNameFormat"] or NETFLOW_FILENAME_FORMAT )
 
@@ -455,6 +463,9 @@ def ProcessFiles( Start, Stop, Query, MaxCache=None ):
 		Results["Epoches"].append( { "Epoch": CurrEpoch, "Recordset": Recordset } )
 
 		CurrEpoch = CurrEpoch + ( Query["SourceFiles"]["Interval"] or NETFLOW_INTERVAL )
+
+	if RequestID and ProgressCallBack:
+		ProgressCallBack( RequestID, 0, 0 )
 
 	if Error is None:
 		if MaxCache:

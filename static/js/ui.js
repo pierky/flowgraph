@@ -1,5 +1,7 @@
-	GlobalConfig = {};
-	Graphs = [];
+	var GlobalConfig = {};
+	var Graphs = [];
+	var ProgessInterval = null;
+	var CurrentRequestID = null;
 
 	function UIError( s ) {
 		alert( s );
@@ -417,6 +419,63 @@
 		}
 	}
 
+	function UIDrawGraph_UpdateProgress( CurrEpoch ) {
+		HTML = '<div style="width: 100%; height: auto; text-align: center; vertical-align: middle;">';
+		HTML += 'Loading data...';
+
+		if( CurrEpoch ) {
+			HTML += '<br>';
+			HTML += 'Processing ' + moment( CurrEpoch*1000 ).format( 'YYYY-MM-DD HH:mm' );
+			HTML += ' [<a href="#">cancel</a>]';
+		}
+
+		HTML += '</div>';
+
+		$('#myChart').html( HTML );
+		$('#myChart a').click( function(e) {
+			e.preventDefault();
+			$('#myChart a').replaceWith( function() {
+				return $("<span>cancelling</span>");
+			} );
+
+			$.ajax( {
+				url: $SCRIPT_ROOT + '/cancelRequest',
+				type: 'GET',
+				contentType: 'application/json',
+				dataType: 'json',
+				data: { 'request_id': CurrentRequestID }
+			} ).complete( function() {
+				$('#myChart a')
+				clearInterval( ProgessInterval );
+			} );
+		} );
+	}
+
+	function UIDrawGraph_Progress() {
+		$.ajax( {
+			url: $SCRIPT_ROOT + '/getRequestProgress',
+			type: 'GET',
+			contentType: 'application/json',
+			dataType: 'json',
+			data: { 'request_id': CurrentRequestID }
+		} ).done( function( data ) {
+			if( 'Completed' in data ) {
+				if( data['Completed'] ) {
+					clearInterval( ProgessInterval );
+					return;
+				}
+			}
+			UIDrawGraph_UpdateProgress( data['Epoch'] );
+
+			if( 'ProgressInterval' in data ) {
+				clearInterval( ProgessInterval );
+				if( data['ProgressInterval'] > 0 ) {
+					ProgessInterval = setInterval( UIDrawGraph_Progress, data['ProgressInterval']*1000 );
+				}
+			}
+		} );
+	}
+
 	function UIDrawGraph( Graph, OverwriteCache, callbackComplete ) {
 		UIInvalidatingCache( Graph['Query'], OverwriteCache, function (data) {
 			if( 'error' in data ) {
@@ -437,6 +496,11 @@
 					$('#saveaspng').hide();
 					$('#myChart').html( '<div style="width: 100%; height: auto; text-align: center; vertical-align: middle;">Loading data...</div>' );
 
+					CurrentRequestID = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+						var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+						return v.toString(16);
+					});
+
 					setTimeout( function() {
 						$.ajax( {
 							url: $SCRIPT_ROOT + '/getData',
@@ -444,19 +508,29 @@
 							contentType: 'application/json',
 							dataType: 'json',
 							data: JSON.stringify( {
-								'Graph': Graph
+								'Graph': Graph,
+								'RequestID': CurrentRequestID
 							} )
 						} ).done( function( data ) {
+							clearInterval( ProgessInterval );
+
 							if( 'error' in data ) {
 								UIError( data['error'] );
 							} else {
 								drawChart( data );
 							}
+
 						} ).error( function( jqXHR, textStatus, errorThrown ) {
+							clearInterval( ProgessInterval );
+
 							UIError( UIAjaxError( 'Error loading data', jqXHR, textStatus, errorThrown ) );
+
 						} ).complete( function() {
+							clearInterval( ProgessInterval );
 							callbackComplete();
 						} );
+
+						ProgessInterval = setInterval( UIDrawGraph_Progress, 3000 );
 					}, 100 );
 				}
 			}

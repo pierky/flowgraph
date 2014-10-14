@@ -21,6 +21,8 @@ CacheObject = {
 }
 """
 
+Requests = {}
+
 # All functions return an object that will be converted to JSON
 # for client-server exchange.
 # Errors are returned in the form { "error": "<error text>" }
@@ -128,7 +130,32 @@ def InvalidatingCache( Query ):
 
 	return { "invalidatingcache": False }
 
-def GetChartData( Graph ):
+def CancelRequest( RequestID ):
+	if not RequestID in Requests:
+		Requests[RequestID] = {}
+
+	Requests[RequestID]["Cancelled"] = True
+
+	return { "error": None }
+
+def GetChartData_RequestStatus( RequestID ):
+	if not RequestID in Requests:
+		return { "Cancelled": False }
+	else:
+		if "Cancelled" in Requests[RequestID]:
+			return { "Cancelled": Requests[RequestID]["Cancelled"] }
+		else:
+			return { "Cancelled": False }
+
+def GetChartData_Progress( RequestID, Epoch, Interval ):
+	if not RequestID in Requests:
+		Requests[RequestID] = {}
+
+	Requests[RequestID]["Epoch"] = Epoch
+	Requests[RequestID]["Completed"] = Epoch == 0
+	Requests[RequestID]["ProgressInterval"] = Interval
+
+def GetChartData( Graph, RequestID ):
 	Error = None
 	Output = {}
 
@@ -144,7 +171,7 @@ def GetChartData( Graph ):
 	if not "ColName" in Graph:
 		Graph["ColName"] = Query["OrderBy"]["ColName"]
 
-	(Error, Results) = ProcessFiles( Start, Stop, Query )
+	(Error, Results) = ProcessFiles( Start, Stop, Query, RequestID=RequestID, ProgressCallBack=GetChartData_Progress, GetRequestStatus=GetChartData_RequestStatus )
 
 	if not Error is None:
 		return { "error": Error }
@@ -153,6 +180,12 @@ def GetChartData( Graph ):
 	Output["Data"] = Results
 
 	return Output
+
+def GetRequestProgress( RequestID ):
+	if RequestID in Requests:
+		return Requests[RequestID]
+	else:
+		return { "error": "Request not found." }
 
 def SaveGraph( Graph ):
 	if "Query" in Graph:
@@ -242,11 +275,12 @@ def GetNfDumpFilterMan():
 	except:
 		Error = "Error while reading man nfdump output: %s" % GetException()
 		return Error
-
+	print(Error)
 	if Error:
 		return Error
 
 	Match = re.search( r'^FILTER.+', Output, re.MULTILINE|re.DOTALL )
+
 	if Match:
 		Output = Match.group(0)
 		Match = re.search( '(.+(\n|\r\n))EXAMPLES', Output, re.MULTILINE|re.DOTALL )

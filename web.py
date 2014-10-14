@@ -52,7 +52,18 @@ def getDetails():
 @flowgraphapp.route('/getData', methods=["POST"])
 def getData():
 	Graph = request.json['Graph']
-	return jsonify( GetChartData( Graph ) )
+	RequestID = request.json['RequestID']
+	return jsonify( GetChartData( Graph, RequestID ) )
+
+@flowgraphapp.route('/getRequestProgress', methods=["GET"])
+def getRequestProgress():
+	RequestID = request.args['request_id']
+	return jsonify( GetRequestProgress( RequestID ) )
+
+@flowgraphapp.route('/cancelRequest', methods=["GET"])
+def cancelRequest():
+	RequestID = request.args['request_id']
+	return jsonify( CancelRequest( RequestID ) )
 
 @flowgraphapp.route('/manNfDumpFilter')
 def manNfDumpFilter():
@@ -62,5 +73,5 @@ if __name__ == '__main__':
 	SetupLogging()
 
 	flowgraphapp.debug = DEBUG
-	flowgraphapp.run(host="0.0.0.0")
+	flowgraphapp.run(host="0.0.0.0",threaded=True)
 
