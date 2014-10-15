@@ -22,8 +22,10 @@ GRAPHS_FILENAME		= "graphs.json"
 
 # --------------------------------------------------------------
 # Log file path, automatically rotated every 1MB with 3 backup.
-# Default: <VAR_DIR>/flowgraph.log
+# Default: <VAR_DIR>/flowgraph.log for the web app
+#	   <VAR_DIR>/scheduler.log for the scheduler
 LOG_FILEPATH		= "%s/flowgraph.log" % VAR_DIR
+SCHEDULER_LOG_FILEPATH	= "%s/scheduler.log" % VAR_DIR
 
 # --------------------------------------------------------------
 # Path to the nfdump binary.

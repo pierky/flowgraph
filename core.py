@@ -15,15 +15,12 @@ from copy import deepcopy
 from config import *
 import hashlib
 
-CURRENT_RELEASE = "v0.2.0"
+CURRENT_RELEASE = "v0.2.1"
 
-def SetupLogging():
+def SetupLogging(LogFilePath=None):
 	logger = logging.getLogger("FlowGraph")
 
-	hdlr = logging.handlers.RotatingFileHandler( LOG_FILEPATH, maxBytes=1000000, backupCount=3 )
 	formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
-	hdlr.setFormatter(formatter)
-	logger.addHandler(hdlr)
 
 	if SEND_ERROR_VIA_EMAIL:
 		hdlr = logging.handlers.SMTPHandler( ( SEND_ERROR_SMTP, SEND_ERROR_SMTP_PORT ), SEND_ERROR_FROM_EMAIL, [ SEND_ERROR_TO_EMAIL ], "FlowGraph error" )
@@ -35,6 +32,15 @@ def SetupLogging():
 		logger.setLevel(logging.DEBUG)
 	else:
 		logger.setLevel(logging.INFO)
+
+	try:
+		hdlr = logging.handlers.RotatingFileHandler( LogFilePath or LOG_FILEPATH, maxBytes=1000000, backupCount=3 )
+		hdlr.setFormatter(formatter)
+		logger.addHandler(hdlr)
+	except:
+		ErrMsg = "Can't setup logging to file %s. Ensure it has write permissions for the user used by your webserver." % ( LogFilePath or LOG_FILEPATH )
+		logger.log( logging.ERROR, ErrMsg )
+		print( ErrMsg )
 
 	if sys.__stdin__.isatty():
 		Debug( "Interactive - logging to stdout too" )

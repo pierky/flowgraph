@@ -121,7 +121,11 @@ def ProcessGraph( Graph ):
 		return None
 
 def SchedulerMain():
-	SetupLogging()
+	LogFilePath = "%s/%s" % ( VAR_DIR, "scheduler.log" )
+	if "SCHEDULER_LOG_FILEPATH" in globals():
+		LogFilePath = SCHEDULER_LOG_FILEPATH
+
+	SetupLogging( LogFilePath )
 
 	if os.path.isfile( "%s/%s" % ( VAR_DIR, GRAPHS_FILENAME ) ):
 		try:
